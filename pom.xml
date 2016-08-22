@@ -10,9 +10,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cxf.version>3.1.6</cxf.version>
+        <cxf.version>3.0.10</cxf.version>
         <junit.version>4.12</junit.version>
-        <log4j.version>2.6.1</log4j.version>
+        <log4j.version>2.3</log4j.version>
         <maven-failsafe.version>2.19.1</maven-failsafe.version>
     </properties>
 
@@ -29,6 +29,23 @@
             <version>${cxf.version}</version>
         </dependency>
 
+		
+		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
+		<dependency>
+		    <groupId>org.bouncycastle</groupId>
+		    <artifactId>bcprov-jdk15on</artifactId>
+		    <version>1.54</version>
+		</dependency>
+				
+		
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-lang3</artifactId>
+		    <version>3.4</version>
+		</dependency>
+				
+
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
@@ -44,6 +61,14 @@
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>${log4j.version}</version>
         </dependency>
+        
+        <dependency>
+		    <groupId>streamsupport</groupId>
+		    <artifactId>com.streamsupport</artifactId>
+		    <version>1.0</version>
+		    <scope>system</scope>
+		    <systemPath>${project.basedir}/src/main/resources/streamsupport-1.5.1.jar</systemPath>
+		</dependency>
 
 
         <dependency>
@@ -83,6 +108,7 @@
                                     <bindingFiles>
                                         <bindingFile>${basedir}/src/main/resources/schema/bindings.xml</bindingFile>
                                     </bindingFiles>
+                                    <frontEnd>jaxws21</frontEnd>
                                     <extraargs>
                                         <extraarg>-exsh</extraarg>
                                         <extraarg>true</extraarg>
@@ -108,8 +134,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
             <plugin>

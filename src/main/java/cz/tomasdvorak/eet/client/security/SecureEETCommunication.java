@@ -1,11 +1,16 @@
 package cz.tomasdvorak.eet.client.security;
 
-import cz.etrzby.xml.EET;
-import cz.etrzby.xml.EETService;
-import cz.tomasdvorak.eet.client.config.CommunicationMode;
-import cz.tomasdvorak.eet.client.config.EndpointType;
-import cz.tomasdvorak.eet.client.logging.WebserviceLogging;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
+import javax.xml.ws.BindingProvider;
+
 import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.Fault;
@@ -17,13 +22,16 @@ import org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor;
 import org.apache.logging.log4j.Logger;
 import org.apache.wss4j.dom.handler.WSHandlerConstants;
 
-import javax.xml.ws.BindingProvider;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import cz.etrzby.xml.EET;
+import cz.etrzby.xml.EETService;
+import cz.tomasdvorak.eet.client.config.CommunicationMode;
+import cz.tomasdvorak.eet.client.config.EndpointType;
+import cz.tomasdvorak.eet.client.logging.WebserviceLogging;
+import java8.util.J8Arrays;
+import java8.util.function.Function;
+import java8.util.stream.Collectors;
+import java8.util.stream.Stream;
+import java8.util.stream.StreamSupport;
 
 public class SecureEETCommunication {
 
@@ -40,7 +48,7 @@ public class SecureEETCommunication {
     /**
      * Webservice call timeout
      */
-    private static final long RECEIVE_TIMEOUT = 10_000L; // 10s timeout for webservice call - TODO: should it be adjustable?
+    private static final long RECEIVE_TIMEOUT = 10000L; // 10s timeout for webservice call - TODO: should it be adjustable?
 
     /**
      * Check EET's certificate for the following regex
@@ -74,6 +82,7 @@ public class SecureEETCommunication {
         final Client clientProxy = ClientProxy.getClient(port);
         ensureHTTPSKeystorePassword();
         configureEndpointUrl(port, endpointType.getWebserviceUrl());
+        configureSSLSocketFactory(port);
         configureSchemaValidation(port);
         configureTimeout(clientProxy);
         configureLogging(clientProxy);
@@ -107,14 +116,14 @@ public class SecureEETCommunication {
      * Checks, if the response is signed by a key produced by CA, which do we accept (provided to this client)
      */
     private WSS4JInInterceptor createValidatingInterceptor(final CommunicationMode mode) {
-        final Map<String,Object> inProps = new HashMap<>();
+        final Map<String,Object> inProps = new HashMap<String, Object>();
         inProps.put(WSHandlerConstants.ACTION, WSHandlerConstants.SIGNATURE); // only sign, do not encrypt
 
         inProps.put(CRYPTO_INSTANCE_KEY, serverRootCa.getCrypto());  // provides I.CA root CA certificate
         inProps.put(WSHandlerConstants.SIG_PROP_REF_ID, CRYPTO_INSTANCE_KEY);
 
         inProps.put(WSHandlerConstants.SIG_SUBJECT_CERT_CONSTRAINTS, SUBJECT_CERT_CONSTRAINTS); // regex validation of the cert.
-        inProps.put(WSHandlerConstants.ENABLE_REVOCATION, "true"); // activate CRL checks
+//        inProps.put(WSHandlerConstants.ENABLE_REVOCATION, "true"); // activate CRL checks
 
         return new WSS4JInInterceptor(inProps) {
 
@@ -145,12 +154,17 @@ public class SecureEETCommunication {
     private boolean isErrorResponse(final SoapMessage msg) {
         final Map<String, List<String>> headers = (Map<String, List<String>>) msg.get(Message.PROTOCOL_HEADERS);
         final List<String> strings = headers.get("X-Backside-Transport");
-        final Set<String> status = strings.stream().flatMap(s -> Arrays.stream(s.split(" "))).collect(Collectors.toSet());
+        final Set<Object> status = StreamSupport.stream(strings).flatMap(new Function<String, Stream<String>>() {
+			@Override
+			public Stream<String> apply(String s) {
+				return J8Arrays.stream(s.split(" "));
+			}
+		}).collect(Collectors.toSet());
         return status.contains("FAIL");
     }
 
     private WSS4JOutInterceptor createSigningInterceptor() {
-        final Map<String,Object> signingProperties = new HashMap<>();
+        final Map<String,Object> signingProperties = new HashMap<String, Object>();
         signingProperties.put(WSHandlerConstants.ACTION, WSHandlerConstants.SIGNATURE); // only sign, do not encrypt
 
         signingProperties.put(WSHandlerConstants.PW_CALLBACK_REF, this.clientKey.getClientPasswordCallback());
@@ -166,6 +180,10 @@ public class SecureEETCommunication {
 
     private void configureTimeout(final Client clientProxy) {
         final HTTPConduit conduit = (HTTPConduit)clientProxy.getConduit();
+        
+        TLSClientParameters params = new TLSClientParameters();
+        params.setUseHttpsURLConnectionDefaultSslSocketFactory(true);
+        conduit.setTlsClientParameters(params);
         final HTTPClientPolicy policy = new HTTPClientPolicy();
         policy.setReceiveTimeout(RECEIVE_TIMEOUT);
         conduit.setClient(policy);
@@ -176,6 +194,13 @@ public class SecureEETCommunication {
         requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, webserviceUrl);
     }
 
+    private void configureSSLSocketFactory(final EET remote){
+    	final Map<String, Object> requestContext = ((BindingProvider)remote).getRequestContext();
+    	SSLSocketFactory sslFactory = new TSLSocketConnectionFactory();
+        requestContext.put("com.sun.xml.internal.ws.transport.https.client.SSLSocketFactory", sslFactory);
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslFactory);
+    }
+    
     private void configureSchemaValidation(final EET remote) {
         final Map<String, Object> requestContext = ((BindingProvider)remote).getRequestContext();
         requestContext.put("schema-validation-enabled", "true");

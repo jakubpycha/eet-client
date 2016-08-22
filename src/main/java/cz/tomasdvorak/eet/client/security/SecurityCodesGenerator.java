@@ -1,15 +1,15 @@
 package cz.tomasdvorak.eet.client.security;
 
-import cz.etrzby.xml.TrzbaDataType;
-import cz.tomasdvorak.eet.client.exceptions.DataSigningException;
-import cz.tomasdvorak.eet.client.security.ClientKey;
-import cz.tomasdvorak.eet.client.utils.DateUtils;
-import cz.tomasdvorak.eet.client.utils.StringUtils;
-
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.StringJoiner;
+
+import cz.etrzby.xml.TrzbaDataType;
+import cz.tomasdvorak.eet.client.exceptions.DataSigningException;
+import cz.tomasdvorak.eet.client.utils.DateUtils;
+import cz.tomasdvorak.eet.client.utils.StringUtils;
+import java8.util.J8Arrays;
+import java8.util.StringJoiner;
+import java8.util.function.Consumer;
 
 /**
  * Utility for the BKP and PKP signing and hashing
@@ -29,8 +29,13 @@ public class SecurityCodesGenerator {
             final byte[] bytes = sha1(pkp);
             final String base16 = StringUtils.leftPad(toBase16(bytes), 40, '0');
             final String[] blocks = StringUtils.splitBlocks(base16, 8);
-            final StringJoiner stringJoiner = new StringJoiner("-");
-            Arrays.stream(blocks).forEach(stringJoiner::add);
+            final java8.util.StringJoiner stringJoiner = new StringJoiner("-");
+            J8Arrays.stream(blocks).forEach(new Consumer<String>() {
+				@Override
+				public void accept(String s) {
+					stringJoiner.add(s);
+				}
+			});
             return stringJoiner.toString().toUpperCase();
     }
 

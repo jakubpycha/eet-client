@@ -1,18 +1,19 @@
 package cz.tomasdvorak.eet.client;
 
-import cz.etrzby.xml.OdpovedType;
-import cz.etrzby.xml.TrzbaDataType;
-import cz.tomasdvorak.eet.client.config.CommunicationMode;
-import cz.tomasdvorak.eet.client.config.EndpointType;
-import cz.tomasdvorak.eet.client.config.SubmissionType;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.Date;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.util.Date;
+import cz.etrzby.xml.OdpovedType;
+import cz.etrzby.xml.TrzbaDataType;
+import cz.tomasdvorak.eet.client.config.CommunicationMode;
+import cz.tomasdvorak.eet.client.config.EndpointType;
+import cz.tomasdvorak.eet.client.config.SubmissionType;
 
 @Category(IntegrationTest.class)
 public class EETClientTest {

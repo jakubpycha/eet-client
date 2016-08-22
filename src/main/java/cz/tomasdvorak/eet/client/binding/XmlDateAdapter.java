@@ -1,10 +1,14 @@
 package cz.tomasdvorak.eet.client.binding;
 
-import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 /**
  * dateTime attribute is in EET defined by pattern \d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(Z|[+\-]\d\d:\d\d) according to ISO 8601.
@@ -19,16 +23,17 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 public class XmlDateAdapter extends XmlAdapter<String, Date> {
 
-    private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ssXXX";
-
     @Override
     public Date unmarshal(final String inputDate) throws Exception {
-        return new SimpleDateFormat(DATE_PATTERN).parse(inputDate);
+    	return DatatypeConverter.parseDateTime(inputDate).getTime();
     }
 
     @Override
     public String marshal(final Date inputDate) throws Exception {
-        return new SimpleDateFormat(DATE_PATTERN).format(inputDate);
+    	Calendar c = new GregorianCalendar();
+    	c.setTime(inputDate);
+    	return DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(c);
+    	
     }
 
 }

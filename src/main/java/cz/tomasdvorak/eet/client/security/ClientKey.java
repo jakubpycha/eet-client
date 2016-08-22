@@ -1,11 +1,5 @@
 package cz.tomasdvorak.eet.client.security;
 
-import cz.tomasdvorak.eet.client.exceptions.DataSigningException;
-import cz.tomasdvorak.eet.client.exceptions.InvalidKeystoreException;
-import org.apache.logging.log4j.Logger;
-import org.apache.wss4j.common.crypto.Crypto;
-import org.apache.wss4j.common.crypto.Merlin;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -21,6 +15,14 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Enumeration;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.crypto.Merlin;
+
+import cz.tomasdvorak.eet.client.exceptions.DataSigningException;
+import cz.tomasdvorak.eet.client.exceptions.InvalidKeystoreException;
 
 public class ClientKey {
 
@@ -49,11 +51,11 @@ public class ClientKey {
     private String getCertificateInfo(final KeyStore keystore, final String alias) throws InvalidKeystoreException {
         try {
             final X509Certificate cert = (X509Certificate) keystore.getCertificate(alias);
-            return String.join(", ", Arrays.asList(
+            return StringUtils.join(Arrays.asList(
                     "" + cert.getSerialNumber(),
                     alias,
                     cert.getIssuerDN().toString()
-            ));
+            ),", ");
         } catch (final KeyStoreException e) {
             throw new InvalidKeystoreException(e);
         }
@@ -72,9 +74,15 @@ public class ClientKey {
             final KeyStore keystore = KeyStore.getInstance("pkcs12");
             keystore.load(inputStream, password.toCharArray());
             return keystore;
-        } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
+        } catch (CertificateException e){
             throw new InvalidKeystoreException(e);
-        }
+        } catch (KeyStoreException e) {
+        	throw new InvalidKeystoreException(e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new InvalidKeystoreException(e);
+		} catch (IOException e) {
+			throw new InvalidKeystoreException(e);
+		}
     }
 
     /**
@@ -86,9 +94,19 @@ public class ClientKey {
             signature.initSign(getPrivateKey());
             signature.update(text.getBytes("UTF-8"));
             return signature.sign();
-        } catch (NoSuchAlgorithmException | UnrecoverableKeyException | InvalidKeyException | SignatureException | UnsupportedEncodingException | KeyStoreException e) {
-            throw new DataSigningException(e);
-        }
+        } catch (NoSuchAlgorithmException e){
+        	throw new DataSigningException(e);
+        } catch (UnrecoverableKeyException e) {
+        	throw new DataSigningException(e);
+		} catch (InvalidKeyException e) {
+			throw new DataSigningException(e);
+		} catch (SignatureException e) {
+			throw new DataSigningException(e);
+		} catch (UnsupportedEncodingException e) {
+			throw new DataSigningException(e);
+		} catch (KeyStoreException e) {
+			throw new DataSigningException(e);
+		}
     }
 
     private PrivateKey getPrivateKey() throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException {
@@ -100,6 +118,32 @@ public class ClientKey {
      */
     public Crypto getCrypto() {
         final Merlin merlin = new Merlin();
+        try {
+			this.keyStore.getKey(alias, password.toCharArray());
+		} catch (UnrecoverableKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (KeyStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        try {
+			this.keyStore.getKey(alias, password.toCharArray());
+		} catch (UnrecoverableKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (KeyStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
         merlin.setKeyStore(this.keyStore);
         return merlin;
     }

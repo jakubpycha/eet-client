@@ -1,16 +1,19 @@
 package cz.tomasdvorak.eet.client.security;
 
-import cz.tomasdvorak.eet.client.exceptions.InvalidKeystoreException;
-import org.apache.logging.log4j.Logger;
-import org.apache.wss4j.common.crypto.Crypto;
-import org.apache.wss4j.common.crypto.Merlin;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.*;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.crypto.Merlin;
+
+import cz.tomasdvorak.eet.client.exceptions.InvalidKeystoreException;
 
 /**
  * Keystore (=trustStore) holding root certificate of the CA used to create server's keys. The server public certificate
@@ -28,9 +31,15 @@ public class ServerKey {
         try {
             this.trustStore = keystoreOf(caCertificate);
 
-        } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
+        } catch (CertificateException  e) {
             throw new InvalidKeystoreException(e);
-        }
+        } catch (KeyStoreException e) {
+        	throw new InvalidKeystoreException(e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new InvalidKeystoreException(e);
+		} catch (IOException e) {
+			throw new InvalidKeystoreException(e);
+		}
     }
 
     private KeyStore keystoreOf(final InputStream caCertificate) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
