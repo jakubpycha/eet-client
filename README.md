@@ -1,5 +1,8 @@
 ## Client / demo application for #EET - [etrzby.cz](http://www.etrzby.cz)
 [![Build Status](https://travis-ci.org/todvora/eet-client.svg?branch=master)](https://travis-ci.org/todvora/eet-client)
+[![Codecov](https://img.shields.io/codecov/c/github/todvora/eet-client.svg?maxAge=2592000)](https://codecov.io/github/todvora/eet-client/)
+[![Jitpack](https://jitpack.io/v/todvora/eet-client.svg)](https://jitpack.io/#todvora/eet-client)
+[![Slack](https://img.shields.io/badge/Slack-connect-brightgreen.svg)](https://eet-cz.slack.com/)
 
 Simple java client for submission of receipts to the central registry at eet.cz.
 
@@ -96,11 +99,10 @@ CRLDistributionPoints [
 
 The client reads the provided certificate (sent along with the response) downloads CRLs and checks the EET certificate validity against them. CLR has to have an update interval configured. The client caches CRL in memory and updates it when needed. See the [MerlinWithCRLDistributionPointsExtension](src/main/java/cz/tomasdvorak/eet/client/security/MerlinWithCRLDistributionPointsExtension.java) implementation for details.
 
-## To do and to decision
+## TODO and to decide
 
-- Should be the I.CA root certificate downloaded automatically or provided by the implementer?
+- Should be the I.CA root certificate downloaded automatically or provided by the implementer? IMHO no, not secure enough. 
 - Should the I.CA root be added to the default JVM truststore?
-- Distribute through Maven central or [JitPack](https://jitpack.io)?
 - Create demo project, using this client as a dependency
 - Detailed logging
 - Run integration tests on travis-ci (apparently blocked travis's IP/range to the WS by EET server itself)
@@ -108,7 +110,22 @@ The client reads the provided certificate (sent along with the response) downloa
 - Configurable logging when used as a client / connector?
 
 
-## Resources
+## Installation
+
+If you want to use this library as a dependency in your Maven based project, follow instructions provided on [jitpack.io](https://jitpack.io/#todvora/eet-client). There is currently no maven central release. 
+
+## News, discussions
+
+To follow latest news about #EET, join us on [eet-cz.slack.com](https://eet-cz.slack.com/).
+
+## Similar projects
+
+- https://github.com/ondrejnov/eet (PHP, MIT license)
+- https://github.com/novakmi/eetlite (Groovy, MIT license)
+- https://github.com/l-ra/openeet (Java, C#, UNIX shell, Apache 2.0 license)
+- https://github.com/mirus77/DelphiEET (Delphi, MIT license)
+- https://drive.google.com/drive/folders/0B2B4_OfsI25paTB2R0NNM1hqMzg (C#, unknown license)
+
 
 ## License
 
