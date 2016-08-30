@@ -7,3 +7,7 @@ target
 # intellij project files
 *.iml
 .idea
+.classpath
+.settings/org.eclipse.jdt.core.prefs
+.settings/org.eclipse.core.resources.prefs
+*.project
